@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: campus-lost-and-found
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: APP_HTTPS
+        value: "1"

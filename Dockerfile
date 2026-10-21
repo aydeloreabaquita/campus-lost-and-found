@@ -5,4 +5,5 @@ RUN sed -ri 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-availabl
 COPY app /var/www/html/app
 COPY public /var/www/html/public
 RUN mkdir -p /var/www/html/data && chown www-data:www-data /var/www/html/data
-EXPOSE 80
+EXPOSE 10000
+CMD ["sh", "-c", "sed -i \"s/Listen 80/Listen ${PORT:-10000}/\" /etc/apache2/ports.conf && sed -i \"s/:80>/:${PORT:-10000}>/\" /etc/apache2/sites-available/000-default.conf && exec apache2-foreground"]

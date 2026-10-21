@@ -1,5 +1,9 @@
 # Campus Lost and Found Management System
 
+**Live web system:** https://campus-lost-and-found-1nm6.onrender.com
+
+**GitHub repository:** https://github.com/aydeloreabaquita/campus-lost-and-found
+
 A browser-based web system for Aydelore Abaquita, BSIT 3B. PHP 8.3 renders the interface and maintains server-side sessions. Firebase Authentication handles email/password accounts; Cloud Firestore stores item reports and activity logs.
 
 ## Firebase project
@@ -32,11 +36,11 @@ Open http://localhost:8080 and create an account using an email address and an 8
 
 ## Deploy the web system
 
-The included Dockerfile and `render.yaml` support a free Render web service. Choose New > Blueprint in Render and select this repository. No payment plan is configured. `APP_HTTPS=1` ensures secure cookies on the HTTPS deployment.
+The included Dockerfile and `render.yaml` support a free Render web service. Choose New > Blueprint in Render and select this repository. The deployed service uses the free plan. This public-repository connection requires a manual deploy from the Render dashboard after future code updates. `APP_HTTPS=1` ensures secure cookies on the HTTPS deployment.
 
 Records and accounts persist in Firebase when the PHP host restarts. Active PHP sessions may end on a host restart; users can sign in again.
 
-GitHub Pages and plain Firebase Hosting do not execute this PHP application. Use the PHP-compatible Docker deployment. A public repository URL is not a deployed system URL. Deployment is not complete until a live URL has been verified.
+GitHub Pages and plain Firebase Hosting do not execute this PHP application. Use the PHP-compatible Docker deployment. A public repository URL is not a deployed system URL. The live URL above was verified on October 21, 2026, including Firebase login, PHP sessions, add/search/update/delete, CSRF protection, and account isolation. Free instances can take around a minute to wake after inactivity.
 
 Deploy rules with an authenticated Firebase CLI:
 
@@ -51,3 +55,4 @@ The `app/db.php` and `app/LostFoundItem.php` files retain the previous PDO SQLit
 Run `python tests/smoke.py http://localhost:8080` against a development server. This creates disposable Firebase accounts and records to test registration, login, sessions, CRUD/search, escaping, CSRF, and account isolation. It deletes its test item on completion. Clearly prefixed test accounts and their audit entries remain for inspection; run it only against a project authorized for testing.
 
 Run `php tests/firebase.php` to verify automatic token refresh, direct cross-user access denial, and an atomic failed commit against the configured project.
+

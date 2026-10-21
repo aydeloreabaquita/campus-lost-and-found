@@ -27,14 +27,16 @@ class Client:
 c = Client()
 assert 'Welcome back.' in c.page
 assert 'Your item reports' not in c.get('/?edit=1')
-c.post({'action': 'register', 'username': 'test_' + secrets.token_hex(5), 'password': secrets.token_urlsafe(16)})
+email='codex_test_' + secrets.token_hex(6) + '@example.com'
+password=secrets.token_urlsafe(16)
+c.post({'action': 'register', 'username': email, 'password': password})
 assert 'Your item reports' in c.page
 record = dict(action='save', item_name='Test wallet <script>', category='Personal', item_type='Found',
               description='QA test', location='Library', date_reported='2026-10-20', status='Open', reporter_name='Test reporter')
 c.post(record.copy())
-assert 'Record saved successfully.' in c.page
+assert 'Record saved successfully.' in c.page, re.findall(r'<p class="notice error"[^>]*>(.*?)</p>', c.page)
 assert 'Test wallet &lt;script&gt;' in c.page and 'Test wallet <script>' not in c.page
-item_id = re.search(r'href="/\?edit=(\d+)"', c.page)[1]
+item_id = re.search(r'href="/\?edit=([a-f0-9]{24})"', c.page)[1]
 c.get('/?search=Library')
 assert 'Test wallet &lt;script&gt;' in c.page
 c.get('/?search=NotPresentAnywhere')
@@ -46,7 +48,7 @@ c.post(dict(record, csrf='invalid', item_name='CSRF ATTACK'), csrf=False)
 assert 'Session expired.' in c.page
 assert 'CSRF ATTACK' not in c.get()
 other = Client()
-other.post({'action': 'register', 'username': 'other_' + secrets.token_hex(5), 'password': secrets.token_urlsafe(16)})
+other.post({'action': 'register', 'username': 'codex_other_' + secrets.token_hex(6) + '@example.com', 'password': secrets.token_urlsafe(16)})
 assert 'Updated wallet' not in other.page
 assert 'Record not found.' in other.get('/?edit=' + item_id)
 other.post({'action':'delete','id':item_id})
@@ -57,4 +59,7 @@ assert 'Record deleted successfully.' in c.page and 'Updated wallet' not in c.pa
 assert all('>'+action+'<' in c.page for action in ['Added','Updated','Deleted'])
 c.post({'action': 'logout'})
 assert 'Welcome back.' in c.page and 'Your item reports' not in c.page
+c.post({'action':'login','username':email,'password':password})
+assert 'Your item reports' in c.page
+c.post({'action':'logout'})
 print('PASS: registration, sessions, add/search/update/delete, escaping, CSRF, ownership, audit log, logout')

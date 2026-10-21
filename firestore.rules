@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    match /users/{uid}/items/{id} {
+      allow read, delete: if owner(uid);
+      allow create, update: if owner(uid)
+        && request.resource.data.keys().hasAll(['reference_no','item_name','category','item_type','description','location','date_reported','status','reporter_name','created_at'])
+        && request.resource.data.keys().hasOnly(['reference_no','item_name','category','item_type','description','location','date_reported','status','reporter_name','created_at'])
+        && request.resource.data.item_name is string && request.resource.data.item_name.size() > 0 && request.resource.data.item_name.size() <= 100
+        && request.resource.data.category is string && request.resource.data.category.size() > 0 && request.resource.data.category.size() <= 50
+        && request.resource.data.item_type in ['Lost','Found']
+        && request.resource.data.description is string && request.resource.data.description.size() <= 2000
+        && request.resource.data.location is string && request.resource.data.location.size() > 0 && request.resource.data.location.size() <= 100
+        && request.resource.data.reporter_name is string && request.resource.data.reporter_name.size() > 0 && request.resource.data.reporter_name.size() <= 100
+        && request.resource.data.date_reported is string && request.resource.data.date_reported.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.status in ['Open','Matched','Claimed']
+        && request.resource.data.reference_no is string && request.resource.data.reference_no.matches('^LNF-[A-F0-9]{12}$')
+        && request.resource.data.created_at is string && request.resource.data.created_at.size() <= 30;
+    }
+    match /users/{uid}/activity/{id} {
+      allow read: if owner(uid);
+      allow create: if owner(uid)
+        && request.resource.data.keys().hasOnly(['action','reference_no','created_at'])
+        && request.resource.data.action in ['Added','Updated','Deleted']
+        && request.resource.data.reference_no is string && request.resource.data.reference_no.matches('^LNF-[A-F0-9]{12}$')
+        && request.resource.data.created_at is string && request.resource.data.created_at.size() <= 30;
+    }
+  }
+}
